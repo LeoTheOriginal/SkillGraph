@@ -6,7 +6,7 @@ function App() {
 
   useEffect(() => {
     // Pobieramy dane z Twojego backendu
-    fetch('http://localhost:3000/api/graph')
+    fetch('https://skillgraph-174e.onrender.com/api/graph')
       .then(res => res.json())
       .then(data => {
         // Mały fix: upewniamy się, że linki używają ID węzłów
