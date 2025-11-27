@@ -95,7 +95,7 @@ app.get('/api/graph', async (req, res) => {
             const m = record.get('m');
             const r = record.get('r');
 
-            // Konwertuj właściwości węzłów
+            // Konwertuj właściwości węzłów z Neo4j Integer
             const nodeN = convertNeo4jIntegers({
                 id: n.identity.toString(), 
                 label: n.labels[0], 
@@ -145,7 +145,14 @@ app.get('/api/people', async (req, res) => {
                    p.available as available,
                    skills,
                    projects
-            ORDER BY p.seniority DESC, p.yearsExp DESC
+            ORDER BY 
+                CASE p.seniority 
+                    WHEN 'Senior' THEN 1 
+                    WHEN 'Mid' THEN 2 
+                    WHEN 'Junior' THEN 3 
+                    ELSE 4 
+                END,
+                p.yearsExp DESC
         `;
         const records = await runQuery(query);
         
@@ -160,7 +167,6 @@ app.get('/api/people', async (req, res) => {
                 projects: record.get('projects').filter(p => p.name)
             };
             
-            // Konwertuj wszystkie Neo4j integers
             return convertNeo4jIntegers(person);
         });
 
@@ -187,7 +193,14 @@ app.get('/api/people/available', async (req, res) => {
                    p.seniority as seniority,
                    p.yearsExp as yearsExp,
                    skills
-            ORDER BY p.seniority DESC, p.yearsExp DESC
+            ORDER BY 
+                CASE p.seniority 
+                    WHEN 'Senior' THEN 1 
+                    WHEN 'Mid' THEN 2 
+                    WHEN 'Junior' THEN 3 
+                    ELSE 4 
+                END,
+                p.yearsExp DESC
         `;
         const records = await runQuery(query);
         
@@ -197,10 +210,10 @@ app.get('/api/people/available', async (req, res) => {
                 role: record.get('role'),
                 seniority: record.get('seniority'),
                 yearsExp: record.get('yearsExp'),
+                available: true,
                 skills: record.get('skills').filter(s => s.name)
             };
             
-            // Konwertuj wszystkie Neo4j integers
             return convertNeo4jIntegers(person);
         });
 
@@ -229,7 +242,15 @@ app.get('/api/experts/:skill', async (req, res) => {
                    s.name as skill,
                    hs.years as skillYears,
                    hs.proficiency as proficiency
-            ORDER BY hs.proficiency DESC, hs.years DESC
+            ORDER BY 
+                CASE hs.proficiency 
+                    WHEN 'expert' THEN 1 
+                    WHEN 'advanced' THEN 2 
+                    WHEN 'intermediate' THEN 3 
+                    WHEN 'beginner' THEN 4 
+                    ELSE 5 
+                END,
+                hs.years DESC
         `;
         const records = await runQuery(query, { skillName });
         
@@ -245,7 +266,6 @@ app.get('/api/experts/:skill', async (req, res) => {
                 proficiency: record.get('proficiency')
             };
             
-            // Konwertuj wszystkie Neo4j integers
             return convertNeo4jIntegers(expert);
         });
 
@@ -288,7 +308,14 @@ app.get('/api/team-recommendations', async (req, res) => {
                    allSkills,
                    size(matchedSkills) as matchCount,
                    (size(matchedSkills) * 100.0 / $totalRequired) as matchPercentage
-            ORDER BY matchCount DESC, p.seniority DESC, p.yearsExp DESC
+            ORDER BY matchCount DESC, 
+                CASE p.seniority 
+                    WHEN 'Senior' THEN 1 
+                    WHEN 'Mid' THEN 2 
+                    WHEN 'Junior' THEN 3 
+                    ELSE 4 
+                END,
+                p.yearsExp DESC
             LIMIT $limit
         `;
 
@@ -304,12 +331,11 @@ app.get('/api/team-recommendations', async (req, res) => {
                 role: record.get('role'),
                 seniority: record.get('seniority'),
                 yearsExp: record.get('yearsExp'),
-                matchedSkills: record.get('matchedSkills'),
-                allSkills: record.get('allSkills'),
-                matchScore: Math.round(record.get('matchPercentage'))
+                matchedSkills: record.get('matchCount'),
+                skills: record.get('allSkills').filter(s => s.name),
+                matchScore: `${Math.round(record.get('matchPercentage'))}%`
             };
             
-            // Konwertuj wszystkie Neo4j integers
             return convertNeo4jIntegers(rec);
         });
 
@@ -349,7 +375,13 @@ app.get('/api/project-match/:projectName', async (req, res) => {
                    p.seniority as seniority,
                    matchedSkills,
                    (matchCount * 100.0 / size(requiredSkills)) as matchPercentage
-            ORDER BY matchPercentage DESC, p.seniority DESC
+            ORDER BY matchPercentage DESC, 
+                CASE p.seniority 
+                    WHEN 'Senior' THEN 1 
+                    WHEN 'Mid' THEN 2 
+                    WHEN 'Junior' THEN 3 
+                    ELSE 4 
+                END
         `;
 
         const records = await runQuery(query, { projectName });
@@ -370,7 +402,6 @@ app.get('/api/project-match/:projectName', async (req, res) => {
                     matchPercentage: Math.round(record.get('matchPercentage'))
                 };
                 
-                // Konwertuj wszystkie Neo4j integers
                 return convertNeo4jIntegers(candidate);
             })
         };
@@ -414,7 +445,6 @@ app.get('/api/network/:personName', async (req, res) => {
             networkSize: records[0].get('network').filter(n => n.name).length
         };
 
-        // Konwertuj wszystkie Neo4j integers
         res.json(convertNeo4jIntegers(networkData));
     } catch (error) {
         console.error('Error fetching network:', error);
@@ -422,20 +452,22 @@ app.get('/api/network/:personName', async (req, res) => {
     }
 });
 
-// --- LISTA PROJEKTÓW ---
+// --- LISTA PROJEKTÓW (POPRAWIONA) ---
 app.get('/api/projects', async (req, res) => {
     try {
         const { status } = req.query;
         
+        // Poprawione zapytanie - osobno pobieramy dane projektu i relacje
         let query = `
             MATCH (proj:Project)
             ${status ? 'WHERE proj.status = $status' : ''}
             OPTIONAL MATCH (proj)-[:REQUIRES]->(s:Skill)
-            OPTIONAL MATCH (p:Person)-[wo:WORKED_ON]->(proj)
+            OPTIONAL MATCH (person:Person)-[wo:WORKED_ON]->(proj)
+            WHERE wo.to IS NULL OR wo.to = ''
             OPTIONAL MATCH (proj)-[:BELONGS_TO]->(c:Company)
             WITH proj, c,
                  collect(DISTINCT s.name) as requiredSkills,
-                 collect(DISTINCT {name: p.name, role: wo.role}) as team
+                 collect(DISTINCT CASE WHEN person IS NOT NULL THEN {name: person.name, role: wo.role} ELSE null END) as team
             RETURN proj.name as name,
                    proj.status as status,
                    proj.description as description,
@@ -443,15 +475,26 @@ app.get('/api/projects', async (req, res) => {
                    proj.team_size as teamSize,
                    proj.startDate as startDate,
                    proj.endDate as endDate,
+                   proj.duration_months as durationMonths,
                    c.name as client,
                    requiredSkills,
-                   team
-            ORDER BY proj.status, proj.startDate DESC
+                   [t IN team WHERE t IS NOT NULL] as currentTeam
+            ORDER BY 
+                CASE proj.status 
+                    WHEN 'active' THEN 1 
+                    WHEN 'planned' THEN 2 
+                    WHEN 'completed' THEN 3 
+                    ELSE 4 
+                END,
+                proj.startDate DESC
         `;
         
         const records = await runQuery(query, { status });
         
         const projects = records.map(record => {
+            const rawTeam = record.get('currentTeam') || [];
+            const filteredTeam = rawTeam.filter(t => t && t.name);
+            
             const project = {
                 name: record.get('name'),
                 status: record.get('status'),
@@ -460,14 +503,19 @@ app.get('/api/projects', async (req, res) => {
                 teamSize: record.get('teamSize'),
                 startDate: record.get('startDate'),
                 endDate: record.get('endDate'),
+                durationMonths: record.get('durationMonths'),
                 client: record.get('client'),
-                requiredSkills: record.get('requiredSkills'),
-                currentTeam: record.get('team').filter(t => t.name)
+                requiredSkills: record.get('requiredSkills') || [],
+                currentTeam: filteredTeam
             };
             
-            // Konwertuj wszystkie Neo4j integers
             return convertNeo4jIntegers(project);
         });
+
+        console.log('Projects returned:', projects.length);
+        if (projects.length > 0) {
+            console.log('First project sample:', JSON.stringify(projects[0], null, 2));
+        }
 
         res.json({
             total: projects.length,
@@ -485,7 +533,8 @@ app.get('/api/skills', async (req, res) => {
         const query = `
             MATCH (s:Skill)
             OPTIONAL MATCH (p:Person)-[hs:HAS_SKILL]->(s)
-            WITH s, count(p) as peopleCount, avg(hs.years) as avgYears
+            WITH s, count(p) as peopleCount, 
+                 CASE WHEN count(p) > 0 THEN avg(hs.years) ELSE 0 END as avgYears
             RETURN s.name as name,
                    s.type as type,
                    s.level as level,
@@ -497,15 +546,25 @@ app.get('/api/skills', async (req, res) => {
         const records = await runQuery(query);
         
         const skills = records.map(record => {
+            const avgYearsRaw = record.get('avgYears');
+            let avgYears = 0;
+            
+            if (avgYearsRaw !== null && avgYearsRaw !== undefined) {
+                if (neo4j.isInt(avgYearsRaw)) {
+                    avgYears = avgYearsRaw.toNumber();
+                } else if (typeof avgYearsRaw === 'number') {
+                    avgYears = avgYearsRaw;
+                }
+            }
+            
             const skill = {
                 name: record.get('name'),
                 type: record.get('type'),
                 level: record.get('level'),
                 peopleCount: record.get('peopleCount'),
-                avgYears: record.get('avgYears') ? parseFloat(record.get('avgYears').toFixed(1)) : 0
+                avgYears: parseFloat(avgYears.toFixed(1))
             };
             
-            // Konwertuj wszystkie Neo4j integers
             return convertNeo4jIntegers(skill);
         });
 
@@ -531,7 +590,13 @@ app.get('/api/stats', async (req, res) => {
             seniorityDistribution: `
                 MATCH (p:Person)
                 RETURN p.seniority as seniority, count(p) as count
-                ORDER BY count DESC
+                ORDER BY 
+                    CASE p.seniority 
+                        WHEN 'Senior' THEN 1 
+                        WHEN 'Mid' THEN 2 
+                        WHEN 'Junior' THEN 3 
+                        ELSE 4 
+                    END
             `,
             topSkills: `
                 MATCH (p:Person)-[:HAS_SKILL]->(s:Skill)
@@ -590,14 +655,18 @@ app.get('/api/search', async (req, res) => {
     if (!searchTerm) return res.status(400).json({ error: "Parameter 'q' is required" });
 
     const query = `
-        MATCH (p:Person)-[:HAS_SKILL]->(s:Skill)
-        WHERE toLower(s.name) CONTAINS toLower($searchTerm)
-           OR toLower(p.name) CONTAINS toLower($searchTerm)
+        MATCH (p:Person)
+        OPTIONAL MATCH (p)-[:HAS_SKILL]->(s:Skill)
+        WITH p, collect(DISTINCT s.name) as skills
+        WHERE toLower(p.name) CONTAINS toLower($searchTerm)
            OR toLower(p.role) CONTAINS toLower($searchTerm)
+           OR any(skill IN skills WHERE toLower(skill) CONTAINS toLower($searchTerm))
         RETURN DISTINCT p.name as person,
                p.role as role,
                p.seniority as seniority,
-               collect(DISTINCT s.name) as skills
+               p.available as available,
+               skills
+        ORDER BY p.name
     `;
 
     try {
@@ -607,15 +676,16 @@ app.get('/api/search', async (req, res) => {
                 person: record.get('person'),
                 role: record.get('role'),
                 seniority: record.get('seniority'),
+                available: record.get('available'),
                 skills: record.get('skills')
             };
             
-            // Konwertuj wszystkie Neo4j integers
             return convertNeo4jIntegers(result);
         });
         
         res.json({
             searchTerm: searchTerm,
+            total: results.length,
             results: results
         });
     } catch (error) {

@@ -1,142 +1,132 @@
 import { useState, useEffect } from 'react';
-import './ProjectList.css';
+import './PeopleList.css';
 
-function ProjectList({ apiUrl }) {
-  const [projects, setProjects] = useState([]);
+function PeopleList({ apiUrl }) {
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    fetchProjects();
-  }, [statusFilter]);
+    fetchPeople();
+  }, [filter]);
 
-  const fetchProjects = async () => {
+  const fetchPeople = async () => {
     try {
       setLoading(true);
-      const url = statusFilter === 'all' 
-        ? `${apiUrl}/api/projects` 
-        : `${apiUrl}/api/projects?status=${statusFilter}`;
+      const endpoint = filter === 'available' 
+        ? `${apiUrl}/api/people/available` 
+        : `${apiUrl}/api/people`;
       
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch projects');
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error('Failed to fetch people');
       
       const data = await response.json();
-      setProjects(data.projects || []);
+      setPeople(data.people || data.available || []);
       setError(null);
     } catch (err) {
       setError(err.message);
-      setProjects([]);
+      setPeople([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status) => {
-    switch(status?.toLowerCase()) {
-      case 'active': return '#10b981';
-      case 'completed': return '#6b7280';
-      case 'planned': return '#3b82f6';
-      default: return '#64748b';
-    }
-  };
-
-  if (loading) return <div className="loading">Loading projects...</div>;
+  if (loading) return <div className="loading">Loading people...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
   return (
-    <div className="project-list">
+    <div className="people-list">
       <div className="list-header">
-        <h2>📁 Projects</h2>
+        <h2>👥 People</h2>
         <div className="filter-buttons">
           <button 
-            className={statusFilter === 'all' ? 'active' : ''}
-            onClick={() => setStatusFilter('all')}
+            className={filter === 'all' ? 'active' : ''}
+            onClick={() => setFilter('all')}
           >
-            All
+            All ({people.length})
           </button>
           <button 
-            className={statusFilter === 'active' ? 'active' : ''}
-            onClick={() => setStatusFilter('active')}
+            className={filter === 'available' ? 'active' : ''}
+            onClick={() => setFilter('available')}
           >
-            Active
-          </button>
-          <button 
-            className={statusFilter === 'completed' ? 'active' : ''}
-            onClick={() => setStatusFilter('completed')}
-          >
-            Completed
-          </button>
-          <button 
-            className={statusFilter === 'planned' ? 'active' : ''}
-            onClick={() => setStatusFilter('planned')}
-          >
-            Planned
+            Available
           </button>
         </div>
       </div>
 
-      {projects.length === 0 ? (
+      {people.length === 0 ? (
         <div style={{ color: '#94a3b8', textAlign: 'center', marginTop: '3rem' }}>
-          No projects found
+          No people found
         </div>
       ) : (
-        <div className="projects-grid">
-          {projects.map((project, index) => (
-            <div key={index} className="project-card">
-              <div className="project-header">
-                <h3>{project.name}</h3>
-                <span 
-                  className="status-badge"
-                  style={{ backgroundColor: getStatusColor(project.status) }}
-                >
-                  {project.status}
+        <div className="people-grid">
+          {people.map((person, index) => (
+            <div key={index} className="person-card">
+              <div className="person-header">
+                <div className="person-avatar">
+                  {person.name?.split(' ').map(n => n[0]).join('') || '?'}
+                </div>
+                <div className="person-info">
+                  <h3>{person.name}</h3>
+                  <p className="person-role">{person.role}</p>
+                </div>
+              </div>
+
+              <div className="person-meta">
+                <span className={`badge seniority-${person.seniority?.toLowerCase()}`}>
+                  {person.seniority}
                 </span>
-              </div>
-
-              <p className="project-description">{project.description}</p>
-
-              <div className="project-meta">
-                <div className="meta-item">
-                  <span className="label">Client</span>
-                  <span>{project.client || 'N/A'}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="label">Budget</span>
-                  <span>{project.budget || 'N/A'}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="label">Team Size</span>
-                  <span>
-                    {project.currentTeam?.length || 0} / {project.teamSize || 0}
+                <span className="experience">
+                  {person.yearsExp} years exp.
+                </span>
+                {person.available !== undefined && (
+                  <span className={`status ${person.available ? 'available' : 'busy'}`}>
+                    {person.available ? '✅ Available' : '🔴 Busy'}
                   </span>
-                </div>
-                <div className="meta-item">
-                  <span className="label">Start Date</span>
-                  <span>{project.startDate || 'N/A'}</span>
-                </div>
+                )}
               </div>
 
-              {project.requiredSkills && project.requiredSkills.length > 0 && (
-                <div className="project-skills">
-                  <strong>Required Skills:</strong>
+              {person.skills && person.skills.length > 0 && (
+                <div className="person-skills">
+                  <strong>Skills:</strong>
                   <div className="skill-tags">
-                    {project.requiredSkills.map((skill, idx) => (
-                      <span key={idx} className="skill-tag">{skill}</span>
+                    {person.skills.slice(0, 5).map((skill, idx) => (
+                      <span 
+                        key={idx} 
+                        className="skill-tag"
+                        title={`${skill.years || 0} years - ${skill.proficiency || 'N/A'}`}
+                      >
+                        {skill.name}
+                      </span>
                     ))}
+                    {person.skills.length > 5 && (
+                      <span className="skill-tag more">
+                        +{person.skills.length - 5} more
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
 
-              {project.currentTeam && project.currentTeam.length > 0 && (
-                <div className="project-team">
-                  <strong>Current Team:</strong>
+              {person.projects && person.projects.length > 0 && (
+                <div className="person-projects">
+                  <strong>Projects:</strong>
                   <ul>
-                    {project.currentTeam.map((member, idx) => (
-                      <li key={idx}>
-                        {member.name} - {member.role}
-                      </li>
-                    ))}
+                    {person.projects
+                      .filter(p => p.name)
+                      .slice(0, 3)
+                      .map((project, idx) => (
+                        <li key={idx}>
+                          {project.name} 
+                          {project.role && ` - ${project.role}`}
+                          {project.status && (
+                            <span className={`project-status ${project.status}`}>
+                              ({project.status})
+                            </span>
+                          )}
+                        </li>
+                      ))}
                   </ul>
                 </div>
               )}
@@ -148,4 +138,4 @@ function ProjectList({ apiUrl }) {
   );
 }
 
-export default ProjectList;
+export default PeopleList;
