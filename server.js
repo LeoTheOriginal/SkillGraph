@@ -280,6 +280,7 @@ app.get('/api/experts/:skill', async (req, res) => {
     }
 });
 
+
 // --- REKOMENDACJE ZESPOŁU DO PROJEKTU ---
 app.get('/api/team-recommendations', async (req, res) => {
     try {
@@ -289,25 +290,39 @@ app.get('/api/team-recommendations', async (req, res) => {
             return res.status(400).json({ error: 'Parameter "skills" is required (comma-separated)' });
         }
 
-        const requestedSkills = skills.split(',').map(s => s.trim());
+        // Parsowanie skilli i usuwanie pustych wpisów
+        const requestedSkills = skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        
+        if (requestedSkills.length === 0) {
+            return res.status(400).json({ error: 'No valid skills provided' });
+        }
+
         const size = parseInt(teamSize) || 5;
 
         const query = `
+            // 1. Znajdź kandydatów i policz, ile mają pasujących skilli
             MATCH (p:Person {available: true})
-            OPTIONAL MATCH (p)-[hs:HAS_SKILL]->(s:Skill)
+            OPTIONAL MATCH (p)-[:HAS_SKILL]->(s:Skill)
             WHERE s.name IN $requestedSkills
-            WITH p, 
-                 collect(DISTINCT s.name) as matchedSkills,
-                 collect(DISTINCT {name: s.name, years: hs.years, proficiency: hs.proficiency}) as allSkills
-            WHERE size(matchedSkills) > 0
+            
+            WITH p, count(DISTINCT s) as matchCount, collect(DISTINCT s.name) as matchedSkills
+            WHERE matchCount > 0
+
+            // 2. Dla znalezionych kandydatów pobierz TERAZ wszystkie ich umiejętności (pełny profil)
+            MATCH (p)-[hs:HAS_SKILL]->(s_all:Skill)
+            
+            WITH p, matchCount, matchedSkills, 
+                 collect(DISTINCT {name: s_all.name, years: hs.years, proficiency: hs.proficiency}) as allSkills
+
+            // 3. Zwróć wynik
             RETURN p.name as name,
                    p.role as role,
                    p.seniority as seniority,
                    p.yearsExp as yearsExp,
                    matchedSkills,
                    allSkills,
-                   size(matchedSkills) as matchCount,
-                   (size(matchedSkills) * 100.0 / $totalRequired) as matchPercentage
+                   matchCount,
+                   (matchCount * 100.0 / $totalRequired) as matchPercentage
             ORDER BY matchCount DESC, 
                 CASE p.seniority 
                     WHEN 'Senior' THEN 1 
@@ -326,14 +341,19 @@ app.get('/api/team-recommendations', async (req, res) => {
         });
 
         const recommendations = records.map(record => {
+            // Pobranie surowych danych
+            const rawMatchCount = record.get('matchCount');
+            const rawMatchPercentage = record.get('matchPercentage');
+
             const rec = {
                 name: record.get('name'),
                 role: record.get('role'),
                 seniority: record.get('seniority'),
                 yearsExp: record.get('yearsExp'),
-                matchedSkills: record.get('matchCount'),
+                // Konwersja Integera Neo4j na zwykłą liczbę (jeśli konieczne)
+                matchedSkills: neo4j.isInt(rawMatchCount) ? rawMatchCount.toNumber() : rawMatchCount,
                 skills: record.get('allSkills').filter(s => s.name),
-                matchScore: `${Math.round(record.get('matchPercentage'))}%`
+                matchScore: `${Math.round(rawMatchPercentage)}%`
             };
             
             return convertNeo4jIntegers(rec);
