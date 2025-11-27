@@ -1,0 +1,155 @@
+.expert-finder {
+  max-width: 1000px;
+}
+
+.expert-finder h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #f1f5f9;
+}
+
+.search-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 1rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.popular-skills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  color: #94a3b8;
+}
+
+.popular-skill {
+  padding: 0.5rem 1rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.popular-skill:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.results h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #f1f5f9;
+}
+
+.experts-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.expert-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.expert-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+}
+
+.expert-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #334155;
+}
+
+.expert-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.expert-info {
+  flex: 1;
+}
+
+.expert-info h4 {
+  font-size: 1.125rem;
+  color: #f1f5f9;
+  margin-bottom: 0.25rem;
+}
+
+.expert-role {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.proficiency-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.expert-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item .label {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.detail-item span:not(.label) {
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.detail-item .available {
+  color: #10b981;
+}
+
+.detail-item .busy {
+  color: #ef4444;
+}

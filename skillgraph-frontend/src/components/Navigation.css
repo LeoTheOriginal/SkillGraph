@@ -1,0 +1,85 @@
+.navigation {
+  width: 280px;
+  background: #1e293b;
+  border-right: 1px solid #334155;
+  padding: 2rem 0;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.nav-header {
+  padding: 0 1.5rem 2rem 1.5rem;
+  border-bottom: 1px solid #334155;
+}
+
+.nav-header h1 {
+  font-size: 2rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.nav-subtitle {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.nav-menu {
+  list-style: none;
+  padding: 1rem 0;
+}
+
+.nav-menu li {
+  margin: 0.25rem 0;
+}
+
+.nav-button {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-button:hover {
+  background: #334155;
+  color: #fff;
+}
+
+.nav-button.active {
+  background: linear-gradient(90deg, #3b82f6 0%, transparent 100%);
+  color: #fff;
+  border-left: 3px solid #3b82f6;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .navigation {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  
+  .nav-menu {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .nav-menu li {
+    flex: 1;
+    min-width: 150px;
+  }
+}

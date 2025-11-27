@@ -1,51 +1,44 @@
-import { useState, useEffect, useMemo } from 'react';
-import ForceGraph3D from 'react-force-graph-3d';
+import { useState } from 'react';
+import Navigation from './components/Navigation';
+import Dashboard from './components/Dashboard';
+import PeopleList from './components/PeopleList';
+import TeamBuilder from './components/TeamBuilder';
+import ExpertFinder from './components/ExpertFinder';
+import ProjectList from './components/ProjectList';
+import Graph3D from './components/Graph3D';
+import './App.css';
 
 function App() {
-  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const [currentView, setCurrentView] = useState('dashboard');
+  
+  // ZMIEŃ TEN URL NA SWÓJ BACKEND
+  const API_URL = 'https://skillgraph-174e.onrender.com';
 
-  useEffect(() => {
-    // Pobieramy dane z Twojego backendu
-    fetch('https://skillgraph-174e.onrender.com/api/graph')
-      .then(res => res.json())
-      .then(data => {
-        // Mały fix: upewniamy się, że linki używają ID węzłów
-        console.log("Dane z API:", data);
-        setGraphData(data);
-      })
-      .catch(err => console.error("Błąd pobierania:", err));
-  }, []);
-
-  // Konfiguracja kolorów dla różnych typów węzłów
-  const getNodeColor = (node) => {
-    switch(node.label) {
-      case 'Person': return '#ff0000'; // Czerwony dla ludzi
-      case 'Skill': return '#00ff00';  // Zielony dla skilli
-      case 'Project': return '#0000ff'; // Niebieski dla projektów
-      case 'Company': return '#ffff00'; // Żółty dla firm
-      default: return '#ffffff';
+  const renderView = () => {
+    switch(currentView) {
+      case 'dashboard':
+        return <Dashboard apiUrl={API_URL} />;
+      case 'people':
+        return <PeopleList apiUrl={API_URL} />;
+      case 'team-builder':
+        return <TeamBuilder apiUrl={API_URL} />;
+      case 'expert-finder':
+        return <ExpertFinder apiUrl={API_URL} />;
+      case 'projects':
+        return <ProjectList apiUrl={API_URL} />;
+      case 'graph':
+        return <Graph3D apiUrl={API_URL} />;
+      default:
+        return <Dashboard apiUrl={API_URL} />;
     }
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#000' }}>
-      <div style={{ position: 'absolute', top: 20, left: 20, color: 'white', zIndex: 1000, fontFamily: 'Arial' }}>
-        <h1>SkillGraph 3D</h1>
-        <p>Legenda: <span style={{color:'red'}}>Osoba</span> | <span style={{color:'green'}}>Skill</span> | <span style={{color:'blue'}}>Projekt</span> | <span style={{color:'yellow'}}>Firma</span></p>
-      </div>
-      
-      {graphData.nodes.length > 0 && (
-        <ForceGraph3D
-          graphData={graphData}
-          nodeLabel="name"             // Co wyświetlać po najechaniu myszką
-          nodeAutoColorBy="label"      // Automatyczne kolory (opcjonalne, nadpisujemy niżej)
-          nodeColor={getNodeColor}     // Nasze kolory
-          linkDirectionalArrowLength={3.5} // Strzałki na liniach
-          linkDirectionalArrowRelPos={1}
-          nodeThreeObjectExtend={true} // Opcja dla lepszej wydajności
-          linkOpacity={0.5}
-        />
-      )}
+    <div className="app">
+      <Navigation currentView={currentView} setCurrentView={setCurrentView} />
+      <main className="main-content">
+        {renderView()}
+      </main>
     </div>
   );
 }

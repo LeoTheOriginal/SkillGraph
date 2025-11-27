@@ -1,0 +1,184 @@
+.team-builder {
+  max-width: 1200px;
+}
+
+.team-builder h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #f1f5f9;
+}
+
+.subtitle {
+  color: #94a3b8;
+  margin-bottom: 2rem;
+}
+
+.builder-form {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.skill-input {
+  width: 100%;
+  padding: 0.75rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 1rem;
+}
+
+.skill-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.skill-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.skill-suggestion {
+  padding: 0.5rem 1rem;
+  background: #334155;
+  border: none;
+  border-radius: 6px;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.skill-suggestion:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.form-group input[type="number"] {
+  width: 120px;
+  padding: 0.75rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 1rem;
+}
+
+.search-button {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.search-button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.search-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.recommendations {
+  margin-top: 2rem;
+}
+
+.recommendations h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #f1f5f9;
+}
+
+.required-skills {
+  margin-bottom: 1.5rem;
+  color: #94a3b8;
+}
+
+.team-cards {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.team-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.team-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+}
+
+.team-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.team-card-header h4 {
+  flex: 1;
+  font-size: 1.25rem;
+  color: #f1f5f9;
+}
+
+.team-card-header .role {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.match-score {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 8px;
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.team-card-body {
+  padding-top: 1rem;
+  border-top: 1px solid #334155;
+}
+
+.meta-info {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.matched-skills strong {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: #cbd5e1;
+}
+
+.skill-tag.matched {
+  background: #3b82f6;
+  color: #fff;
+}
