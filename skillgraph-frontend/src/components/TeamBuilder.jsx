@@ -88,7 +88,7 @@ function TeamBuilder({ apiUrl }) {
         <div className="recommendations">
           <h3>✨ Recommended Team ({recommendations.recommendations.length} people)</h3>
           <p className="required-skills">
-            <strong>Required:</strong> {recommendations.requiredSkills.join(', ')}
+            <strong>Required:</strong> {recommendations.requestedSkills.join(', ')}
           </p>
 
           <div className="team-cards">
