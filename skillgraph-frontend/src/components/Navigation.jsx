@@ -68,7 +68,7 @@ function Navigation({ currentView, setCurrentView }) {
 
         {/* Footer */}
         <div className="nav-footer">
-          <p>© 2024 SkillGraph</p>
+          <p>© 2025 SkillGraph</p>
         </div>
       </nav>
     </>
