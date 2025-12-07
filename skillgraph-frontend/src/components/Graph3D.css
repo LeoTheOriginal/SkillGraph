@@ -1,47 +1,384 @@
+/* Graph3D.css - Holographic Display Style */
+
 .graph-container {
   width: 100%;
-  height: calc(100vh - 4rem);
+  height: calc(100vh - 8rem);
+  min-height: 600px;
   position: relative;
-  background: #000;
-  border-radius: 12px;
+  background: rgba(10, 15, 30, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid var(--brand-accent-cyan);
+  border-radius: 20px;
   overflow: hidden;
+  box-shadow: 
+    0 0 30px rgba(0, 246, 255, 0.3),
+    0 0 60px rgba(212, 0, 255, 0.2),
+    inset 0 0 80px rgba(0, 246, 255, 0.05);
+  animation: pulse-glow-border 3s ease-in-out infinite;
 }
 
+@keyframes pulse-glow-border {
+  0%, 100% {
+    border-color: var(--brand-accent-cyan);
+    box-shadow: 
+      0 0 30px rgba(0, 246, 255, 0.3),
+      0 0 60px rgba(212, 0, 255, 0.2),
+      inset 0 0 80px rgba(0, 246, 255, 0.05);
+  }
+  50% {
+    border-color: var(--brand-accent-magenta);
+    box-shadow: 
+      0 0 40px rgba(0, 246, 255, 0.4),
+      0 0 80px rgba(212, 0, 255, 0.3),
+      inset 0 0 100px rgba(212, 0, 255, 0.08);
+  }
+}
+
+/* Canvas container for 3D graph */
+.graph-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Floating Legend - Top Left */
 .graph-legend {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  background: rgba(30, 41, 59, 0.95);
-  border: 1px solid #334155;
-  border-radius: 12px;
+  top: 1.5rem;
+  left: 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 246, 255, 0.3);
+  border-radius: 16px;
   padding: 1.5rem;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
+  min-width: 200px;
+  z-index: 100;
+  box-shadow: 
+    0 0 20px rgba(0, 246, 255, 0.2),
+    inset 0 0 40px rgba(0, 246, 255, 0.05);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .graph-legend h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: #f1f5f9;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 246, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
+.graph-legend h3 .material-icons-outlined {
+  font-size: 18px;
+  color: var(--brand-accent-cyan);
+  filter: drop-shadow(0 0 8px var(--brand-accent-cyan));
+}
+
+/* Legend Items */
 .legend-items {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.legend-items span {
+.legend-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #cbd5e1;
   font-size: 0.875rem;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.legend-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
 }
 
 .legend-color {
   width: 20px;
   height: 20px;
-  border-radius: 4px;
-  display: inline-block;
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px currentColor;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.legend-color.person {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+}
+
+.legend-color.skill {
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.legend-color.project {
+  background: #3b82f6;
+  box-shadow: 0 0 10px #3b82f6;
+}
+
+.legend-color.company {
+  background: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+}
+
+/* Controls Panel - Bottom Right */
+.graph-controls {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 0, 255, 0.3);
+  border-radius: 16px;
+  padding: 1rem;
+  z-index: 100;
+  box-shadow: 
+    0 0 20px rgba(212, 0, 255, 0.2),
+    inset 0 0 40px rgba(212, 0, 255, 0.05);
+  display: flex;
+  gap: 0.75rem;
+}
+
+.graph-control-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text-muted);
+}
+
+.graph-control-btn:hover {
+  background: rgba(212, 0, 255, 0.2);
+  border-color: rgba(212, 0, 255, 0.4);
+  color: var(--brand-accent-magenta);
+  box-shadow: 0 0 15px rgba(212, 0, 255, 0.5);
+}
+
+.graph-control-btn .material-icons-outlined {
+  font-size: 20px;
+}
+
+/* Stats Overlay - Top Right */
+.graph-stats {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 246, 255, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  z-index: 100;
+  display: flex;
+  gap: 1.5rem;
+  box-shadow: 
+    0 0 20px rgba(0, 246, 255, 0.15),
+    inset 0 0 40px rgba(0, 246, 255, 0.03);
+}
+
+.graph-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.graph-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.graph-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Node Info Tooltip */
+.graph-tooltip {
+  position: absolute;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 1rem;
+  z-index: 200;
+  pointer-events: none;
+  box-shadow: 
+    0 0 30px rgba(0, 246, 255, 0.3),
+    0 0 60px rgba(212, 0, 255, 0.2);
+  min-width: 200px;
+}
+
+.tooltip-header {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tooltip-label {
+  color: var(--text-muted);
+}
+
+.tooltip-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Loading State */
+.graph-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background: rgba(10, 15, 30, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 300;
+}
+
+.graph-loading-spinner {
+  width: 80px;
+  height: 80px;
+  border: 4px solid rgba(0, 246, 255, 0.2);
+  border-top-color: var(--brand-accent-cyan);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.graph-loading-text {
+  font-size: 1.125rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Error State */
+.graph-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.graph-error .material-icons-outlined {
+  font-size: 80px;
+  color: #ef4444;
+  filter: drop-shadow(0 0 20px #ef4444);
+}
+
+.graph-error-message {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  max-width: 400px;
+}
+
+.graph-error-retry {
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, var(--brand-accent-cyan), var(--brand-accent-blue));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-glow-cyan);
+}
+
+.graph-error-retry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(0, 246, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .graph-legend,
+  .graph-stats {
+    font-size: 0.875rem;
+    padding: 1rem;
+  }
+  
+  .graph-controls {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .graph-container {
+    height: calc(100vh - 6rem);
+    min-height: 400px;
+  }
+  
+  .graph-legend {
+    top: 1rem;
+    left: 1rem;
+    min-width: 150px;
+  }
+  
+  .graph-stats {
+    display: none; /* Hide stats on mobile to save space */
+  }
+  
+  .graph-controls {
+    bottom: 1rem;
+    right: 1rem;
+  }
 }
