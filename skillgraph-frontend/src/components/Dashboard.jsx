@@ -2,7 +2,16 @@ import { useState, useEffect } from 'react';
 import './Dashboard.css';
 
 function Dashboard({ apiUrl }) {
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState({
+    totalPeople: 0,
+    availableNow: 0,
+    totalProjects: 0,
+    activeProjects: 0,
+    totalSkills: 0,
+    availabilityRate: 0,
+    seniorityDistribution: [],
+    topSkills: []
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,6 +24,7 @@ function Dashboard({ apiUrl }) {
       setLoading(true);
       const response = await fetch(`${apiUrl}/api/stats`);
       if (!response.ok) throw new Error('Failed to fetch stats');
+      
       const data = await response.json();
       setStats(data);
       setError(null);
@@ -27,143 +37,147 @@ function Dashboard({ apiUrl }) {
 
   if (loading) return <div className="loading">Loading dashboard...</div>;
   if (error) return <div className="error">Error: {error}</div>;
-  if (!stats) return <div className="error">No data available</div>;
 
   const availabilityRate = stats.totalPeople > 0 
-    ? Math.round((stats.availablePeople / stats.totalPeople) * 100) 
+    ? Math.round((stats.availableNow / stats.totalPeople) * 100)
     : 0;
 
   return (
     <div className="dashboard">
-      <div className="dashboard-layout">
-        
-        {/* LEWA KOLUMNA: STATYSTYKI */}
-        <div className="stats-column">
-          <div className="section-title">
-            <span className="material-icons-outlined text-primary">bar_chart</span>
-            <h2>Overview</h2>
-          </div>
+      <h2>Dashboard Overview</h2>
 
-          <div className="stats-grid-small">
-            {/* Card 1: Total Employees (Blue) */}
-            <div className="stat-card-stitch stat-blue">
-              <div className="icon-box">
-                <span className="material-icons-outlined">groups</span>
-              </div>
-              <div>
-                <p className="stat-value">{stats.totalPeople}</p>
-                <p className="stat-label">Total Employees</p>
-              </div>
+      {/* Stats Grid */}
+      <div className="stats-grid">
+        {/* Stat Card 1 - Total Employees */}
+        <div className="stat-card">
+          <div className="stat-header">
+            <div className="stat-info">
+              <div className="stat-label">Total Employees</div>
+              <div className="stat-value">{stats.totalPeople}</div>
             </div>
-
-            {/* Card 2: Available (Green) */}
-            <div className="stat-card-stitch stat-green">
-              <div className="icon-box">
-                <span className="material-icons-outlined">check_circle_outline</span>
-              </div>
-              <div>
-                <p className="stat-value">{stats.availablePeople}</p>
-                <p className="stat-label">Available Now</p>
-              </div>
-            </div>
-
-            {/* Card 3: Total Projects (Yellow) */}
-            <div className="stat-card-stitch stat-yellow">
-              <div className="icon-box">
-                <span className="material-icons-outlined">folder</span>
-              </div>
-              <div>
-                <p className="stat-value">{stats.totalProjects}</p>
-                <p className="stat-label">Total Projects</p>
-              </div>
-            </div>
-
-            {/* Card 4: Active Projects (Red/Blue styled) */}
-            <div className="stat-card-stitch stat-red">
-              <div className="icon-box">
-                <span className="material-icons-outlined">rocket_launch</span>
-              </div>
-              <div>
-                <p className="stat-value">{stats.activeProjects}</p>
-                <p className="stat-label">Active Projects</p>
-              </div>
-            </div>
-
-            {/* Card 5: Technologies (Orange) */}
-            <div className="stat-card-stitch stat-orange">
-              <div className="icon-box">
-                <span className="material-icons-outlined">bolt</span>
-              </div>
-              <div>
-                <p className="stat-value">{stats.totalSkills}</p>
-                <p className="stat-label">Technologies</p>
-              </div>
-            </div>
-
-            {/* Card 6: Availability Rate (Teal) */}
-            <div className="stat-card-stitch stat-teal">
-              <div className="icon-box">
-                <span className="material-icons-outlined">show_chart</span>
-              </div>
-              <div>
-                <p className="stat-value">{availabilityRate}%</p>
-                <p className="stat-label">Availability Rate</p>
-              </div>
+            <div className="stat-icon cyan">
+              <span className="material-icons-outlined">group</span>
             </div>
           </div>
         </div>
 
-        {/* PRAWA KOLUMNA: WYKRESY */}
-        <div className="content-column">
-          
-          {/* Seniority Panel */}
-          <div className="glass-panel">
-            <div className="panel-header">
-              <span className="material-icons-outlined text-primary" style={{color:'#3b82f6'}}>signal_cellular_alt</span>
-              <h3>Seniority Distribution</h3>
+        {/* Stat Card 2 - Available Now */}
+        <div className="stat-card">
+          <div className="stat-header">
+            <div className="stat-info">
+              <div className="stat-label">Available Now</div>
+              <div className="stat-value">{stats.availableNow}</div>
             </div>
-            <div className="seniority-list">
-              {stats.seniorityDistribution && stats.seniorityDistribution.map((item) => {
-                const percentage = stats.totalPeople > 0 
-                  ? (item.count / stats.totalPeople) * 100 
-                  : 0;
-                
-                return (
-                  <div key={item.seniority} className="seniority-row">
-                    <span className="seniority-name">{item.seniority}</span>
-                    <div className="progress-track">
-                      <div 
-                        className="progress-fill" 
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                    <span className="seniority-val">{item.count}</span>
-                  </div>
-                );
-              })}
+            <div className="stat-icon green">
+              <span className="material-icons-outlined">check_circle</span>
             </div>
           </div>
+        </div>
 
-          {/* Top Skills Panel */}
-          <div className="glass-panel">
-            <div className="panel-header">
-              <span className="material-icons-outlined" style={{color: '#f97316'}}>local_fire_department</span>
-              <h3>Top 10 Skills</h3>
+        {/* Stat Card 3 - Total Projects */}
+        <div className="stat-card">
+          <div className="stat-header">
+            <div className="stat-info">
+              <div className="stat-label">Total Projects</div>
+              <div className="stat-value">{stats.totalProjects}</div>
             </div>
-            <div className="skills-grid-new">
-              {stats.topSkills && stats.topSkills.length > 0 ? (
-                stats.topSkills.map((item) => (
-                  <div key={item.skill} className="skill-card-mini">
-                    <span>{item.skill}</span>
-                    <span>{item.count} people</span>
-                  </div>
-                ))
-              ) : (
-                <p style={{ color: '#94a3b8' }}>No skills data available</p>
-              )}
+            <div className="stat-icon magenta">
+              <span className="material-icons-outlined">folder</span>
             </div>
           </div>
+        </div>
 
+        {/* Stat Card 4 - Active Projects */}
+        <div className="stat-card">
+          <div className="stat-header">
+            <div className="stat-info">
+              <div className="stat-label">Active Projects</div>
+              <div className="stat-value">{stats.activeProjects}</div>
+            </div>
+            <div className="stat-icon blue">
+              <span className="material-icons-outlined">rocket_launch</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stat Card 5 - Technologies */}
+        <div className="stat-card">
+          <div className="stat-header">
+            <div className="stat-info">
+              <div className="stat-label">Technologies</div>
+              <div className="stat-value">{stats.totalSkills}</div>
+            </div>
+            <div className="stat-icon orange">
+              <span className="material-icons-outlined">bolt</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stat Card 6 - Availability Rate */}
+        <div className="stat-card">
+          <div className="stat-header">
+            <div className="stat-info">
+              <div className="stat-label">Availability Rate</div>
+              <div className="stat-value">{availabilityRate}%</div>
+            </div>
+            <div className="stat-icon purple">
+              <span className="material-icons-outlined">show_chart</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="charts-section">
+        {/* Seniority Distribution */}
+        <div className="chart-card">
+          <div className="chart-header">
+            <span className="material-icons-outlined">signal_cellular_alt</span>
+            <h3>Seniority Distribution</h3>
+          </div>
+          <div className="seniority-bars">
+            {stats.seniorityDistribution && stats.seniorityDistribution.map((item) => {
+              const percentage = stats.totalPeople > 0 
+                ? (item.count / stats.totalPeople) * 100 
+                : 0;
+              
+              return (
+                <div key={item.seniority} className="seniority-row">
+                  <span className="seniority-label">{item.seniority}</span>
+                  <div className="seniority-bar-track">
+                    <div 
+                      className="seniority-bar-fill" 
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                  <span className="seniority-value">{item.count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Top Skills */}
+        <div className="chart-card">
+          <div className="chart-header">
+            <span className="material-icons-outlined">local_fire_department</span>
+            <h3>Top 10 Skills</h3>
+          </div>
+          <div className="skills-list">
+            {stats.topSkills && stats.topSkills.length > 0 ? (
+              stats.topSkills.map((item, index) => (
+                <div key={item.skill} className="skill-item">
+                  <div className="skill-item-left">
+                    <span className="skill-rank">{index + 1}</span>
+                    <span className="skill-name">{item.skill}</span>
+                  </div>
+                  <span className="skill-count">{item.count}</span>
+                </div>
+              ))
+            ) : (
+              <p style={{ color: '#94a3b8', textAlign: 'center' }}>No skills data available</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -42,93 +42,109 @@ function TeamBuilder({ apiUrl }) {
 
   return (
     <div className="team-builder">
-      <h2>🔨 Team Builder</h2>
-      <p className="subtitle">Find the best team for your project based on required skills</p>
+      <h2>Team Builder</h2>
+      <p style={{ color: '#94a3b8', marginBottom: '2rem' }}>
+        Find the best team for your project based on required skills
+      </p>
 
-      <div className="builder-form">
-        <div className="form-group">
-          <label>Required Skills (comma-separated):</label>
-          <input
-            type="text"
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            placeholder="e.g. React, Node.js, Docker"
-            className="skill-input"
-          />
-          <div className="skill-suggestions">
-            {predefinedSkills.map(skill => (
-              <button 
-                key={skill} 
-                className="skill-suggestion"
-                onClick={() => addSkill(skill)}
-              >
-                + {skill}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label>Team Size:</label>
-          <input
-            type="number"
-            value={teamSize}
-            onChange={(e) => setTeamSize(parseInt(e.target.value))}
-            min="1"
-            max="10"
-          />
-        </div>
-
-        <button className="search-button" onClick={handleSearch} disabled={loading}>
-          {loading ? '🔍 Searching...' : '🔍 Find Team'}
+      {/* Search Form */}
+      <div className="team-filters">
+        <input
+          type="search"
+          value={skills}
+          onChange={(e) => setSkills(e.target.value)}
+          placeholder="e.g. React, Node.js, Docker"
+        />
+        <select 
+          value={teamSize} 
+          onChange={(e) => setTeamSize(parseInt(e.target.value))}
+        >
+          {[...Array(10)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>Team Size: {i + 1}</option>
+          ))}
+        </select>
+        <button onClick={handleSearch} disabled={loading}>
+          <span className="material-icons-outlined">search</span>
+          {loading ? 'Searching...' : 'Find Team'}
         </button>
       </div>
 
+      {/* Skill Suggestions */}
+      <div className="skill-suggestions">
+        <div className="skill-suggestions-label">Quick Add</div>
+        {predefinedSkills.map(skill => (
+          <button 
+            key={skill} 
+            className="skill-suggestion-tag"
+            onClick={() => addSkill(skill)}
+          >
+            + {skill}
+          </button>
+        ))}
+      </div>
+
+      {/* Recommendations */}
       {recommendations && (
-        <div className="recommendations">
-          <h3>✨ Recommended Team ({recommendations.recommendations.length} people)</h3>
-          <p className="required-skills">
+        <div style={{ marginTop: '2rem' }}>
+          <h3 style={{ marginBottom: '1.5rem', color: '#f1f5f9' }}>
+            ✨ Recommended Team ({recommendations.recommendations.length} people)
+          </h3>
+          <p style={{ marginBottom: '1.5rem', color: '#94a3b8' }}>
             <strong>Required:</strong> {recommendations.requestedSkills.join(', ')}
           </p>
 
           <div className="team-cards">
             {recommendations.recommendations.map((person, idx) => (
-              <div key={idx} className="team-card">
-                <div className="team-card-header">
-                  <div className="person-avatar">
+              <div key={idx} className="team-member-card">
+                {/* Member Header */}
+                <div className="member-header">
+                  <div className="member-avatar">
                     {person.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <div>
-                    <h4>{person.name}</h4>
-                    <p className="role">{person.role}</p>
-                  </div>
-                  <div className="match-score">
-                    {person.matchScore}
+                  <div className="member-info">
+                    <h4 className="member-name">{person.name}</h4>
+                    <p className="member-role">{person.role}</p>
                   </div>
                 </div>
 
-                <div className="team-card-body">
-                  <div className="meta-info">
-                    <span className={`badge seniority-${person.seniority?.toLowerCase()}`}>
-                      {person.seniority}
-                    </span>
-                    <span className="experience">{person.yearsExp} years</span>
-                  </div>
+                {/* Meta */}
+                <div className="member-meta">
+                  <span className={`member-status available`}>
+                    {person.matchScore} Match
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                    {person.seniority} • {person.yearsExp} years
+                  </span>
+                </div>
 
-                  <div className="matched-skills">
-                    <strong>Matched Skills ({person.matchedSkills}):</strong>
-                    <div className="skill-tags">
-                      {person.skills.map((skill, i) => (
-                        <span 
-                          key={i} 
-                          className="skill-tag matched"
-                          title={`${skill.years} years - ${skill.proficiency}`}
-                        >
-                          {skill.name} ({skill.proficiency})
-                        </span>
-                      ))}
-                    </div>
+                {/* Skills */}
+                <div className="member-skills">
+                  <div className="member-skills-label">
+                    Matched Skills ({person.matchedSkills})
                   </div>
+                  <div className="member-skill-tags">
+                    {person.skills.map((skill, i) => (
+                      <span 
+                        key={i} 
+                        className="member-skill-tag"
+                        title={`${skill.years} years - ${skill.proficiency}`}
+                      >
+                        {skill.name} ({skill.proficiency})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="member-actions">
+                  <button className="member-btn member-btn-add">
+                    <span className="material-icons-outlined">person_add</span>
+                    Add to Team
+                  </button>
+                  <button className="member-btn member-btn-view">
+                    <span className="material-icons-outlined">visibility</span>
+                    View Profile
+                  </button>
                 </div>
               </div>
             ))}

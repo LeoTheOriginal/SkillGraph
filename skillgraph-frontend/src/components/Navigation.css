@@ -1,4 +1,4 @@
-/* Navigation.css - Glass Sidebar with Neon Effects */
+/* Navigation.css - Glass Sidebar with Mobile Menu */
 
 .navigation {
   position: fixed;
@@ -16,6 +16,7 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  transition: transform 0.3s ease;
 }
 
 /* Logo Section */
@@ -36,6 +37,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-glow-mixed);
+  flex-shrink: 0;
 }
 
 .nav-logo-icon .material-icons-outlined {
@@ -52,6 +54,12 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.nav-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
 }
 
 /* Navigation Items */
@@ -76,6 +84,10 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: left;
 }
 
 .nav-item::before {
@@ -125,29 +137,13 @@
   filter: drop-shadow(0 0 8px var(--brand-accent-cyan));
 }
 
-/* Mobile Navigation */
-@media (max-width: 1024px) {
-  .navigation {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-
-  .navigation.open {
-    transform: translateX(0);
-  }
-
-  .nav-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 999;
-    display: none;
-  }
-
-  .nav-overlay.open {
-    display: block;
-  }
+/* Footer */
+.nav-footer {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--glass-border);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
 }
 
 /* Mobile Toggle Button */
@@ -161,6 +157,7 @@
   height: 48px;
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   align-items: center;
@@ -179,17 +176,48 @@
   font-size: 24px;
 }
 
+/* Mobile Overlay */
+.nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+}
+
+/* Mobile Styles */
 @media (max-width: 1024px) {
+  .navigation {
+    transform: translateX(-100%);
+  }
+
+  .navigation.open {
+    transform: translateX(0);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+  }
+
   .nav-toggle {
     display: flex;
   }
+
+  .nav-overlay {
+    display: block;
+  }
 }
 
-/* Footer Section (optional) */
-.nav-footer {
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--glass-border);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-align: center;
+/* Tablet adjustments */
+@media (max-width: 768px) {
+  .navigation {
+    width: 280px;
+  }
+
+  .nav-logo h1 {
+    font-size: 1.25rem;
+  }
+
+  .nav-item {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
 }

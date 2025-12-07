@@ -37,59 +37,62 @@ function PeopleList({ apiUrl }) {
 
   return (
     <div className="people-list">
-      <div className="list-header">
-        <h2>👥 People</h2>
-        <div className="filter-buttons">
-          <button 
-            className={filter === 'all' ? 'active' : ''}
-            onClick={() => setFilter('all')}
-          >
-            All ({people.length})
-          </button>
-          <button 
-            className={filter === 'available' ? 'active' : ''}
-            onClick={() => setFilter('available')}
-          >
-            Available
-          </button>
-        </div>
+      <h2>People</h2>
+
+      {/* Filters */}
+      <div className="people-filters">
+        <input 
+          type="search" 
+          placeholder="Search people..." 
+        />
+        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="all">All ({people.length})</option>
+          <option value="available">Available</option>
+        </select>
       </div>
 
+      {/* People Grid */}
       {people.length === 0 ? (
-        <div style={{ color: '#94a3b8', textAlign: 'center', marginTop: '3rem' }}>
-          No people found
-        </div>
+        <div className="empty-state">No people found</div>
       ) : (
         <div className="people-grid">
           {people.map((person, index) => (
             <div key={index} className="person-card">
+              {/* Seniority Badge */}
+              {person.seniority && (
+                <div className={`person-seniority ${person.seniority.toLowerCase()}`}>
+                  {person.seniority}
+                </div>
+              )}
+
+              {/* Person Header */}
               <div className="person-header">
                 <div className="person-avatar">
                   {person.name?.split(' ').map(n => n[0]).join('') || '?'}
                 </div>
                 <div className="person-info">
-                  <h3>{person.name}</h3>
+                  <h3 className="person-name">{person.name}</h3>
                   <p className="person-role">{person.role}</p>
                 </div>
               </div>
 
+              {/* Person Meta */}
               <div className="person-meta">
-                <span className={`badge seniority-${person.seniority?.toLowerCase()}`}>
-                  {person.seniority}
-                </span>
                 <span className="experience">
+                  <span className="material-icons-outlined">work</span>
                   {person.yearsExp} years exp.
                 </span>
                 {person.available !== undefined && (
-                  <span className={`status ${person.available ? 'available' : 'busy'}`}>
-                    {person.available ? '✅ Available' : '🔴 Busy'}
+                  <span className={`person-status ${person.available ? 'available' : 'busy'}`}>
+                    {person.available ? 'Available' : 'Busy'}
                   </span>
                 )}
               </div>
 
+              {/* Skills */}
               {person.skills && person.skills.length > 0 && (
                 <div className="person-skills">
-                  <strong>Skills:</strong>
+                  <div className="person-skills-label">Skills</div>
                   <div className="skill-tags">
                     {person.skills.slice(0, 5).map((skill, idx) => (
                       <span 
@@ -102,16 +105,17 @@ function PeopleList({ apiUrl }) {
                     ))}
                     {person.skills.length > 5 && (
                       <span className="skill-tag more">
-                        +{person.skills.length - 5} more
+                        +{person.skills.length - 5}
                       </span>
                     )}
                   </div>
                 </div>
               )}
 
+              {/* Projects */}
               {person.projects && person.projects.length > 0 && (
                 <div className="person-projects">
-                  <strong>Projects:</strong>
+                  <div className="person-projects-label">Projects</div>
                   <ul>
                     {person.projects
                       .filter(p => p.name)
@@ -120,11 +124,6 @@ function PeopleList({ apiUrl }) {
                         <li key={idx}>
                           {project.name} 
                           {project.role && ` - ${project.role}`}
-                          {project.status && (
-                            <span className={`project-status ${project.status}`}>
-                              ({project.status})
-                            </span>
-                          )}
                         </li>
                       ))}
                   </ul>

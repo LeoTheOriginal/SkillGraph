@@ -3,156 +3,163 @@ import './ProjectList.css';
 
 function ProjectList({ apiUrl }) {
   const [projects, setProjects] = useState([]);
-  const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    const endpoint = filter === 'all' ? '/api/projects' : `/api/projects?status=${filter}`;
-    
-    setLoading(true);
-    fetch(`${apiUrl}${endpoint}`)
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch projects');
-        return res.json();
-      })
-      .then(data => {
-        console.log('Projects data:', data); // Debug
-        setProjects(data.projects || []);
-        setError(null);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching projects:', err);
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [apiUrl, filter]);
+    fetchProjects();
+  }, []);
 
-  const getStatusColor = (status) => {
-    const colors = {
-      'active': '#10b981',
-      'completed': '#6b7280',
-      'planned': '#3b82f6'
-    };
-    return colors[status?.toLowerCase()] || '#6b7280';
-  };
-
-  const formatBudget = (budget) => {
-    if (!budget && budget !== 0) return 'N/A';
-    return `$${Number(budget).toLocaleString()}`;
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${apiUrl}/api/projects`);
+      if (!response.ok) throw new Error('Failed to fetch projects');
+      
+      const data = await response.json();
+      setProjects(data.projects || []);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+      setProjects([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) return <div className="loading">Loading projects...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
+  const filteredProjects = filter === 'all' 
+    ? projects 
+    : projects.filter(p => p.status?.toLowerCase() === filter);
+
   return (
-    <div className="project-list">
-      <div className="list-header">
-        <h2>📁 Projects ({projects.length})</h2>
-        <div className="filter-buttons">
-          <button 
-            className={filter === 'all' ? 'active' : ''} 
-            onClick={() => setFilter('all')}
-          >
-            All
-          </button>
-          <button 
-            className={filter === 'active' ? 'active' : ''} 
-            onClick={() => setFilter('active')}
-          >
-            Active
-          </button>
-          <button 
-            className={filter === 'completed' ? 'active' : ''} 
-            onClick={() => setFilter('completed')}
-          >
-            Completed
-          </button>
-          <button 
-            className={filter === 'planned' ? 'active' : ''} 
-            onClick={() => setFilter('planned')}
-          >
-            Planned
-          </button>
-        </div>
+    <div className="projects-list">
+      <h2>Projects ({projects.length})</h2>
+
+      {/* Filters */}
+      <div className="projects-filters">
+        <input 
+          type="search" 
+          placeholder="Search projects..." 
+        />
+        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="completed">Completed</option>
+          <option value="planned">Planned</option>
+        </select>
       </div>
 
-      {projects.length === 0 ? (
-        <div style={{ color: '#94a3b8', textAlign: 'center', marginTop: '3rem' }}>
-          No projects found
-        </div>
+      {/* Projects Grid */}
+      {filteredProjects.length === 0 ? (
+        <div className="empty-state">No projects found</div>
       ) : (
         <div className="projects-grid">
-          {projects.map((project, idx) => (
-            <div key={idx} className="project-card">
+          {filteredProjects.map((project, index) => (
+            <div key={index} className="project-card">
+              {/* Project Header */}
               <div className="project-header">
-                <h3>{project.name || 'Unnamed Project'}</h3>
-                <span 
-                  className="status-badge"
-                  style={{backgroundColor: getStatusColor(project.status)}}
-                >
-                  {project.status || 'unknown'}
-                </span>
+                <div className="project-title-section">
+                  <h3 className="project-name">{project.name}</h3>
+                  {project.company && (
+                    <p className="project-company">
+                      <span className="material-icons-outlined">business</span>
+                      {project.company}
+                    </p>
+                  )}
+                </div>
+                {project.status && (
+                  <span className={`project-status ${project.status.toLowerCase()}`}>
+                    {project.status}
+                  </span>
+                )}
               </div>
 
-              <p className="project-description">
-                {project.description || 'No description available'}
-              </p>
+              {/* Project Details */}
+              {project.description && (
+                <p style={{ color: '#cbd5e1', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  {project.description}
+                </p>
+              )}
 
-              <div className="project-meta">
-                <div className="meta-item">
-                  <span className="label">Client</span>
-                  <span>{project.client || 'Internal / N/A'}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="label">Budget</span>
-                  <span>{formatBudget(project.budget)}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="label">Team</span>
-                  <span>
-                    {project.currentTeam?.filter(m => m.name).length || 0} / {project.teamSize || '?'}
-                  </span>
-                </div>
-                <div className="meta-item">
-                  <span className="label">Start Date</span>
-                  <span>{project.startDate || 'TBD'}</span>
-                </div>
-                {project.endDate && (
-                  <div className="meta-item">
-                    <span className="label">End Date</span>
-                    <span>{project.endDate}</span>
+              <div className="project-details">
+                {project.budget && (
+                  <div className="project-detail-row">
+                    <span className="material-icons-outlined">attach_money</span>
+                    <span className="project-detail-label">Budget:</span>
+                    <span className="project-detail-value">${project.budget.toLocaleString()}</span>
+                  </div>
+                )}
+                {project.teamSize && (
+                  <div className="project-detail-row">
+                    <span className="material-icons-outlined">group</span>
+                    <span className="project-detail-label">Team:</span>
+                    <span className="project-detail-value">{project.teamSize} members</span>
+                  </div>
+                )}
+                {project.startDate && (
+                  <div className="project-detail-row">
+                    <span className="material-icons-outlined">event</span>
+                    <span className="project-detail-label">Start:</span>
+                    <span className="project-detail-value">{project.startDate}</span>
                   </div>
                 )}
               </div>
 
+              {/* Technologies */}
               {project.requiredSkills && project.requiredSkills.length > 0 && (
-                <div className="project-skills">
-                  <strong>Required Skills:</strong>
-                  <div className="skill-tags">
+                <div className="project-technologies">
+                  <div className="project-technologies-label">Required Skills</div>
+                  <div className="tech-tags">
                     {project.requiredSkills.map((skill, i) => (
-                      <span key={i} className="skill-tag">{skill}</span>
+                      <span key={i} className="tech-tag">{skill}</span>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Team */}
               {project.currentTeam && project.currentTeam.filter(m => m.name).length > 0 && (
                 <div className="project-team">
-                  <strong>Team ({project.currentTeam.filter(m => m.name).length}):</strong>
-                  <ul>
+                  <div className="project-team-label">Team Members</div>
+                  <div className="team-members">
                     {project.currentTeam
                       .filter(m => m.name)
                       .map((member, i) => (
-                        <li key={i}>
-                          <span className="member-name">{member.name}</span>
-                          {member.role && <span className="member-role"> - {member.role}</span>}
-                        </li>
+                        <div key={i} className="team-member">
+                          <div className="team-member-avatar">
+                            {member.name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '500' }}>
+                              {member.name}
+                            </div>
+                            {member.role && (
+                              <div style={{ fontSize: '0.625rem', color: '#94a3b8' }}>
+                                {member.role}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       ))}
-                  </ul>
+                  </div>
                 </div>
               )}
+
+              {/* Action Buttons */}
+              <div className="project-actions">
+                <button className="project-btn project-btn-primary">
+                  <span className="material-icons-outlined">visibility</span>
+                  View Details
+                </button>
+                <button className="project-btn project-btn-secondary">
+                  <span className="material-icons-outlined">edit</span>
+                  Edit
+                </button>
+              </div>
             </div>
           ))}
         </div>

@@ -1,4 +1,4 @@
-/* App.css - Main Layout */
+/* App.css - Main Layout with Mobile Support */
 
 .app {
   display: flex;
@@ -14,16 +14,17 @@
   transition: margin-left 0.3s ease;
 }
 
+/* Mobile: Remove left margin and add top padding for toggle button */
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
-    padding: 1.5rem;
+    padding: 6rem 1.5rem 1.5rem 1.5rem; /* Extra top padding for mobile toggle */
   }
 }
 
 @media (max-width: 768px) {
   .main-content {
-    padding: 1rem;
+    padding: 5rem 1rem 1rem 1rem;
   }
 }
 
@@ -44,10 +45,29 @@ h1 {
 
 h2 {
   font-size: 2rem;
+  background: linear-gradient(135deg, var(--brand-accent-cyan), var(--brand-accent-magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 h3 {
   font-size: 1.5rem;
+}
+
+/* Responsive Headers */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
 }
 
 /* Buttons */
@@ -106,6 +126,7 @@ input[type="text"],
 input[type="search"],
 input[type="email"],
 input[type="password"],
+input[type="number"],
 select,
 textarea {
   width: 100%;
