@@ -2,16 +2,7 @@ import { useState, useEffect } from 'react';
 import './Dashboard.css';
 
 function Dashboard({ apiUrl }) {
-  const [stats, setStats] = useState({
-    totalPeople: 0,
-    availableNow: 0,
-    totalProjects: 0,
-    activeProjects: 0,
-    totalSkills: 0,
-    availabilityRate: 0,
-    seniorityDistribution: [],
-    topSkills: []
-  });
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -26,6 +17,7 @@ function Dashboard({ apiUrl }) {
       if (!response.ok) throw new Error('Failed to fetch stats');
       
       const data = await response.json();
+      console.log('Stats data:', data); // Debug
       setStats(data);
       setError(null);
     } catch (err) {
@@ -37,9 +29,11 @@ function Dashboard({ apiUrl }) {
 
   if (loading) return <div className="loading">Loading dashboard...</div>;
   if (error) return <div className="error">Error: {error}</div>;
+  if (!stats) return <div className="error">No data available</div>;
 
+  // POPRAWKA: używamy availablePeople z API
   const availabilityRate = stats.totalPeople > 0 
-    ? Math.round((stats.availableNow / stats.totalPeople) * 100)
+    ? Math.round((stats.availablePeople / stats.totalPeople) * 100)
     : 0;
 
   return (
@@ -53,7 +47,7 @@ function Dashboard({ apiUrl }) {
           <div className="stat-header">
             <div className="stat-info">
               <div className="stat-label">Total Employees</div>
-              <div className="stat-value">{stats.totalPeople}</div>
+              <div className="stat-value">{stats.totalPeople || 0}</div>
             </div>
             <div className="stat-icon cyan">
               <span className="material-icons-outlined">group</span>
@@ -61,12 +55,12 @@ function Dashboard({ apiUrl }) {
           </div>
         </div>
 
-        {/* Stat Card 2 - Available Now */}
+        {/* Stat Card 2 - Available Now - POPRAWKA: używamy availablePeople */}
         <div className="stat-card">
           <div className="stat-header">
             <div className="stat-info">
               <div className="stat-label">Available Now</div>
-              <div className="stat-value">{stats.availableNow}</div>
+              <div className="stat-value">{stats.availablePeople || 0}</div>
             </div>
             <div className="stat-icon green">
               <span className="material-icons-outlined">check_circle</span>
@@ -79,7 +73,7 @@ function Dashboard({ apiUrl }) {
           <div className="stat-header">
             <div className="stat-info">
               <div className="stat-label">Total Projects</div>
-              <div className="stat-value">{stats.totalProjects}</div>
+              <div className="stat-value">{stats.totalProjects || 0}</div>
             </div>
             <div className="stat-icon magenta">
               <span className="material-icons-outlined">folder</span>
@@ -92,7 +86,7 @@ function Dashboard({ apiUrl }) {
           <div className="stat-header">
             <div className="stat-info">
               <div className="stat-label">Active Projects</div>
-              <div className="stat-value">{stats.activeProjects}</div>
+              <div className="stat-value">{stats.activeProjects || 0}</div>
             </div>
             <div className="stat-icon blue">
               <span className="material-icons-outlined">rocket_launch</span>
@@ -105,7 +99,7 @@ function Dashboard({ apiUrl }) {
           <div className="stat-header">
             <div className="stat-info">
               <div className="stat-label">Technologies</div>
-              <div className="stat-value">{stats.totalSkills}</div>
+              <div className="stat-value">{stats.totalSkills || 0}</div>
             </div>
             <div className="stat-icon orange">
               <span className="material-icons-outlined">bolt</span>
@@ -136,24 +130,28 @@ function Dashboard({ apiUrl }) {
             <h3>Seniority Distribution</h3>
           </div>
           <div className="seniority-bars">
-            {stats.seniorityDistribution && stats.seniorityDistribution.map((item) => {
-              const percentage = stats.totalPeople > 0 
-                ? (item.count / stats.totalPeople) * 100 
-                : 0;
-              
-              return (
-                <div key={item.seniority} className="seniority-row">
-                  <span className="seniority-label">{item.seniority}</span>
-                  <div className="seniority-bar-track">
-                    <div 
-                      className="seniority-bar-fill" 
-                      style={{ width: `${percentage}%` }}
-                    ></div>
+            {stats.seniorityDistribution && stats.seniorityDistribution.length > 0 ? (
+              stats.seniorityDistribution.map((item) => {
+                const percentage = stats.totalPeople > 0 
+                  ? (item.count / stats.totalPeople) * 100 
+                  : 0;
+                
+                return (
+                  <div key={item.seniority} className="seniority-row">
+                    <span className="seniority-label">{item.seniority}</span>
+                    <div className="seniority-bar-track">
+                      <div 
+                        className="seniority-bar-fill" 
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="seniority-value">{item.count}</span>
                   </div>
-                  <span className="seniority-value">{item.count}</span>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <p style={{ color: '#94a3b8' }}>No seniority data available</p>
+            )}
           </div>
         </div>
 
