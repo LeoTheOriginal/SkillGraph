@@ -6,6 +6,7 @@ function PeopleList({ apiUrl }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchPeople();
@@ -32,6 +33,19 @@ function PeopleList({ apiUrl }) {
     }
   };
 
+  // Live search filtering
+  const filteredPeople = people.filter(person => {
+    if (!searchTerm) return true;
+    
+    const search = searchTerm.toLowerCase();
+    return (
+      person.name?.toLowerCase().includes(search) ||
+      person.role?.toLowerCase().includes(search) ||
+      person.seniority?.toLowerCase().includes(search) ||
+      person.skills?.some(skill => skill.name?.toLowerCase().includes(search))
+    );
+  });
+
   if (loading) return <div className="loading">Loading people...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
@@ -39,47 +53,65 @@ function PeopleList({ apiUrl }) {
     <div className="people-list">
       <h2>People</h2>
 
-      {/* Filters */}
+      {/* Search + Filters */}
       <div className="people-filters">
         <input 
           type="search" 
-          placeholder="Search people..." 
+          placeholder="Search people by name, role, or skill..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="people-search-input"
         />
-        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-          <option value="all">All ({people.length})</option>
-          <option value="available">Available</option>
-        </select>
+        <div className="filter-buttons">
+          <button 
+            className={filter === 'all' ? 'active' : ''}
+            onClick={() => setFilter('all')}
+          >
+            All
+          </button>
+          <button 
+            className={filter === 'available' ? 'active' : ''}
+            onClick={() => setFilter('available')}
+          >
+            Available
+          </button>
+        </div>
       </div>
 
+      {/* Dynamic results counter */}
+      {searchTerm && (
+        <div className="search-results-info">
+          Found {filteredPeople.length} {filteredPeople.length === 1 ? 'person' : 'people'}
+          {searchTerm && ` matching "${searchTerm}"`}
+        </div>
+      )}
+
       {/* People Grid */}
-      {people.length === 0 ? (
-        <div className="empty-state">No people found</div>
+      {filteredPeople.length === 0 ? (
+        <div className="empty-state">
+          {searchTerm ? 'No people found matching your search' : 'No people found'}
+        </div>
       ) : (
         <div className="people-grid">
-          {people.map((person, index) => (
+          {filteredPeople.map((person, index) => (
             <div key={index} className="person-card">
-              {/* Seniority Badge */}
-              {person.seniority && (
-                <div className={`person-seniority ${person.seniority.toLowerCase()}`}>
-                  {person.seniority}
-                </div>
-              )}
-
-              {/* Person Header */}
+              {/* Avatar & Header */}
               <div className="person-header">
                 <div className="person-avatar">
                   {person.name?.split(' ').map(n => n[0]).join('') || '?'}
                 </div>
                 <div className="person-info">
-                  <h3 className="person-name">{person.name}</h3>
+                  <h3>{person.name}</h3>
                   <p className="person-role">{person.role}</p>
                 </div>
               </div>
 
-              {/* Person Meta */}
+              {/* Seniority + Status */}
               <div className="person-meta">
-                <span className="experience">
-                  <span className="material-icons-outlined">work</span>
+                <span className={`person-badge seniority-${person.seniority?.toLowerCase()}`}>
+                  {person.seniority}
+                </span>
+                <span className="person-experience">
                   {person.yearsExp} years exp.
                 </span>
                 {person.available !== undefined && (

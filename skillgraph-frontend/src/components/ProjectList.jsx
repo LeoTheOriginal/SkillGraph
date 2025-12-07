@@ -6,6 +6,7 @@ function ProjectList({ apiUrl }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchProjects();
@@ -28,34 +29,82 @@ function ProjectList({ apiUrl }) {
     }
   };
 
+  // Live search + status filter
+  const filteredProjects = projects.filter(project => {
+    // Filter by status
+    const statusMatch = filter === 'all' || project.status?.toLowerCase() === filter;
+    
+    // Filter by search term
+    if (!searchTerm) return statusMatch;
+    
+    const search = searchTerm.toLowerCase();
+    const searchMatch = (
+      project.name?.toLowerCase().includes(search) ||
+      project.company?.toLowerCase().includes(search) ||
+      project.description?.toLowerCase().includes(search) ||
+      project.requiredSkills?.some(skill => skill?.toLowerCase().includes(search))
+    );
+    
+    return statusMatch && searchMatch;
+  });
+
   if (loading) return <div className="loading">Loading projects...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
-  const filteredProjects = filter === 'all' 
-    ? projects 
-    : projects.filter(p => p.status?.toLowerCase() === filter);
-
   return (
     <div className="projects-list">
-      <h2>Projects ({projects.length})</h2>
+      <h2>Projects</h2>
 
-      {/* Filters */}
+      {/* Search + Filters */}
       <div className="projects-filters">
         <input 
           type="search" 
-          placeholder="Search projects..." 
+          placeholder="Search projects by name, company, or skill..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="projects-search-input"
         />
-        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-          <option value="all">All</option>
-          <option value="active">Active</option>
-          <option value="completed">Completed</option>
-          <option value="planned">Planned</option>
-        </select>
+        <div className="filter-buttons">
+          <button 
+            className={filter === 'all' ? 'active' : ''}
+            onClick={() => setFilter('all')}
+          >
+            All
+          </button>
+          <button 
+            className={filter === 'active' ? 'active' : ''}
+            onClick={() => setFilter('active')}
+          >
+            Active
+          </button>
+          <button 
+            className={filter === 'completed' ? 'active' : ''}
+            onClick={() => setFilter('completed')}
+          >
+            Completed
+          </button>
+          <button 
+            className={filter === 'planned' ? 'active' : ''}
+            onClick={() => setFilter('planned')}
+          >
+            Planned
+          </button>
+        </div>
       </div>
+
+      {/* Dynamic results counter */}
+      {searchTerm && (
+        <div className="search-results-info">
+          Found {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
+          {searchTerm && ` matching "${searchTerm}"`}
+        </div>
+      )}
 
       {/* Projects Grid */}
       {filteredProjects.length === 0 ? (
-        <div className="empty-state">No projects found</div>
+        <div className="empty-state">
+          {searchTerm ? 'No projects found matching your search' : 'No projects found'}
+        </div>
       ) : (
         <div className="projects-grid">
           {filteredProjects.map((project, index) => (
@@ -78,13 +127,12 @@ function ProjectList({ apiUrl }) {
                 )}
               </div>
 
-              {/* Project Details */}
+              {/* Project Description */}
               {project.description && (
-                <p style={{ color: '#cbd5e1', fontSize: '0.875rem', marginBottom: '1rem' }}>
-                  {project.description}
-                </p>
+                <p className="project-description">{project.description}</p>
               )}
 
+              {/* Project Details */}
               <div className="project-details">
                 {project.budget && (
                   <div className="project-detail-row">
